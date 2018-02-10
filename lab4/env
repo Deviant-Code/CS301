@@ -1,0 +1,25 @@
+#lang racket
+
+(define lookup
+  (lambda (symbol environment)
+  (cond 
+    [(empty? (cdr environment)) (error 'symbolnotinenv)]
+    [(symbol? symbol) (error 'not 'a 'symbol)]
+    [(eq? (symbol) (car(car environment))) (car(cdr environment))]
+    [else (lookup symbol (cdr environment))])))
+
+;;(list?
+;;(number?
+ 
+    
+       
+
+         
+;;(define find (symbol list)
+;;  (cond [car environment
+
+(define env (list
+             (list 'x 5)
+             (list '+ +)
+             (list '* *)))
+
