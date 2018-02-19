@@ -1,0 +1,45 @@
+#lang racket
+
+(define copy-append
+  (lambda (l1)
+    (cond
+      [(empty? l1) '()]
+      [else (append
+             (list (car l1))
+             (copy-append (cdr l1)))])))
+
+(define copy-cons
+  (lambda (l1)
+    (cond
+      [(empty? l1) '()]
+      [else (cons
+             (list (car l1))
+             (copy-cons (cdr l1)))])))
+
+;; Car always returns the type of first element
+;; cdr returns list
+;;(append (list 1) (list 2))
+
+(define sublists
+  (lambda (l1)
+    (cond
+      [(empty? l1) '()]
+      [else
+       (cons (car l1) (cdr l1))
+       (sublists (cdr l1))])))
+             
+
+(define distribute
+  (lambda (c1 l1)
+    (cond
+      [(empty? l1) '()]
+      [else (cons
+             (cons c1 (car l1))
+             (distribute c1 (cdr l1)))])))
+
+
+
+
+  
+  
+  

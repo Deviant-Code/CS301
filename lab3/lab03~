@@ -1,0 +1,20 @@
+#lang racket
+
+(define copy-append
+  (lambda (l1)
+    (cond
+      [(empty? l1) '()]
+      [else (append
+             (list (car l1))
+             (copy-append (cdr l1)))])))
+
+(define copy-cons
+  (lambda (l1)
+    (cond
+      [(empty? l1) '()]
+      [else (cons
+             (list (car l1))
+             (copy-cons (cdr l1)))])))
+
+
+
