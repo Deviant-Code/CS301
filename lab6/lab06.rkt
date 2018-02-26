@@ -50,21 +50,12 @@
     [(eq? (car exp) 'cond) (if (evaluate (car(car(cdr exp))) env)
                                (evaluate (car(cdr(car(cdr exp)))) env)
                                (evaluate-special-form (cons (car exp) (cdr(cdr exp))) env))]
-   [(eq? (car exp) 'let) (define newEnv '())
-                         (define newList (second exp))
-                         (define (recurseLet newList)
-                           (if (null? exp) ((append newEnv env) (evaluate (third exp) env))
-                            
-                               ((append '((first newList) (evaluate (second newList))) newEnv)
-                               (recurseLet (secondNewlist)
-                             
+   [(eq? (car exp) 'let) (evaluate (third exp) (append (letF (second exp) env '()) env))]
+   [else (error "First Item Of List Is Not A Valid Special Form")]))
                          
-                               
+
                            
-    [else (error "First Item Of List Is Not A Valid Special Form")]))
-
-
-
-(define testLet '(let
-                     ((x (+ 2 2)) (y x) (z (* 3 3)))
-                     (+ a x y z)))
+(define (letF exp env newEnv)
+     (if (null? exp) newEnv
+            (letF (cdr exp) env (cons(cons (first(first exp)) (list (evaluate (second(first exp)) env))) newEnv))))
+                                  
