@@ -1,0 +1,159 @@
+\documentclass[10pt]{article}
+ 
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath,amsthm,amssymb, graphicx, multicol, array}
+
+
+\newenvironment{problem}[2][Problem]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\begin{document}
+ 
+\title{CSCI 301, Winter 2018\\Math Exercises \#7}
+\author{Jesse Ericksen - W01173602}
+\date{Due: February $28^{th} 2018$}
+\maketitle
+ 
+\begin{problem}{1}
+A = $\{a^ib^j\mid i \geq j \geq 0\}$
+\end{problem}
+ 
+\begin{proof}[Proof]
+
+Suppose A is regular. \newline
+
+Let p = pumping length. 
+
+Let s be some string $\in A$ with $|s| \geq p$. \newline
+
+Suppose $s = a^{p-1} b^{p-1}$. 
+
+Therefore, s is in the language and $|s| > p$.\newline
+
+Suppose $x,y,z$ exist. \newline
+
+
+Since $|x,y| \leq p$ and $|a| \leq p$, we know atleast that $y$ MUST contain only b's.
+\newline
+
+Now, the pumping lemma states $xy^iz \in A$. 
+
+Yet, we can see that for $i > 1$, 
+
+\begin{center}
+i.e. $xyyz$ , $xyyyz$ $xyyyyz$ ...
+\end{center}
+
+the resulting string CANNOT be in the language A because then we would have more b's than a's which 
+
+would not satisfy the condition that $ i \geq j \geq 0 $. Therefore, this equation cannot be pumped and must 
+
+NOT be regular.
+
+\end{proof}
+
+\begin{problem}{2}
+ $A = \{a^{4n+5}b^{3n+2}: n\geq 0\}$
+\end{problem}
+
+
+\begin{proof}[Proof] 
+
+Suppose A is regular. \newline
+
+Let p = pumping length.
+
+Let s be some string $\in$ A with $|s| > p$ \newline
+
+Suppose $ s = a^{4p+5}b^{3p+2}$.
+
+Therefore, s is in the language A and $|s| \geq p$. \newline
+
+Suppose $x,y,z$ exist.
+
+Since, $|xy| \leq p$ we know that x and y must be all a's. \newline
+
+The pumping lemma states that for regular languages with $x,y,z$ that $xy^iz$ must also be in that language. 
+
+However, for any $i > 1$ this is not true for $ s \in A $. \newline
+
+For example, consider $xyyz$
+
+\begin{center}
+then $s = a^{4p+5+1}b^{3p+2} = a^{4p+6}b^{3p+2} \notin A$
+\end{center}
+
+In this case, any extra a's would result in a string that is not in our language, thus this expression cannot 
+
+be pumped and must NOT be a regular language.
+
+
+
+
+
+\end{proof}
+
+\begin{problem}{3}
+A = $\{a^ib^jc^k \mid i = j \mbox{ or } j = k\}$
+\end{problem}
+
+\begin{proof}[Proof]
+Suppose A is regular. \newline
+
+Lets break this problem up into two cases and evaluate them individually. \newline
+
+Let p = pumping length.
+
+Let s be some string $\in$ A with $|s| \geq p$ \newline
+
+Case 1: [ i = j ]\newline
+
+
+Suppose $s = a^{p}b^{p}c^k$. 
+
+Therefore, $s$ is in the language and its length is greater than $p$.
+\newline
+
+Since, $|xy| \leq p$, we know $x$ and $y$ must consist of all a's. \newline
+
+We know by the pumping lemma for regular languages that $xy^iz \in A$
+
+Consider one example of this, xyyz. \newline
+
+This results in $s = a^{p+1}b^pc^k$. \newline
+
+Now, $|a| \neq |b|$ which does not satisfy the condition for case 1 that $i = j$. We have a contradiction. \newline \newline
+
+Case 2:  [j = k] \newline
+
+Let $s = a^ib^pc^p$. 
+
+Therefore, s is in the language and $|s| \geq p$. \newline
+
+Suppose i = 0. 
+
+Then for $|xy| \leq p, x,y$ must be all b's. \newline
+
+According to the pumping lemma $xy^iz \in A$. Lets consider $xy^2z$. \newline
+
+This results in $s = a^ib^{p+1}c^p$ and now our condition is not met as $j \neq k$.
+
+Furthermore, this contradiction arises for any value > 1. Since y cannot be pumped without such a 
+
+contradiction, we have proven that this language is NOT regular. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{proof}
+\end{document}
