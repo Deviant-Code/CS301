@@ -61,8 +61,7 @@
 
 (define (apply-closure exp val)
   (evaluate (third exp)
-            (append (build-list (second exp) val '()) (fourth exp))))
-
+            (append (map list (second exp) val) (fourth exp))))
 
 (define (apply-function cexp dexp env)
   (cond
@@ -70,11 +69,6 @@
     [(eq? (car cexp) 'closure) (apply-closure cexp dexp)]
     [else (error "Not A Procedure")]))
 
-
-(define (build-list var val newEnv)
-  (if (empty? var) newEnv
-       (build-list (cdr var) (cdr val) (cons (cons (car var) (list(car val))) newEnv))))
-            
                            
 (define (letF exp env newEnv)
      (if (null? exp) newEnv
