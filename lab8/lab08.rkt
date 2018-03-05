@@ -13,6 +13,7 @@
 ;; *  Lab5 Adds functionality for IF and COND statements
 ;; ** Lab6 Adds functionality for let statements
 ;; *** Lab7 Adds functionality for lambda statements
+;; **** Lab8 Adds functionality for letrec statements
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide lookup)
@@ -43,6 +44,7 @@
     [(eq? (car list) 'cond) #t]
     [(eq? (car list) 'let) #t]
     [(eq? (car list) 'lambda) #t]
+    [(eq? (car list) 'letrec) #t]
     [else #f]))
 
 (define (evaluate-special-form exp env)
@@ -53,7 +55,14 @@
                                (evaluate-special-form (cons (car exp) (cdr(cdr exp))) env))]
    [(eq? (car exp) 'let) (evaluate (third exp) (append (letF (second exp) env '()) env))]
    [(eq? (car exp) 'lambda) (append(cons 'closure (cdr exp)) (list env))]
+   [(eq? (car exp) 'letrec) (helpletrec (second exp) '() )]
    [else (error "First Item Of List Is Not A Valid Special Form")]))
+
+(define (helpletrec exp newEnv)
+  (if (empty? (car exp)) newEnv
+   ((cons (first(first exp)) (cons 'closure (cdr(first exp))))
+    (helpletrec (cdr exp) newEnv))))
+ 
 
 (define (apply-closure exp val)
   (evaluate (third exp)

@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage{amsfonts,amssymb}
+\usepackage[margin=1in]{geometry}
+
+\title{CSCI 301, Winter 2018\\Math Exercises \# 8}
+\author{Jesse Ericksen}
+\date{Due date:  Midnight, Wednesday, Mar 7}
+
+\begin{document}
+
+\maketitle
+
+\noindent
+Find a context free grammar for each of the following languages.
+
+\begin{enumerate}
+\item
+  $\{a^ib^j\mid i \geq j \geq 0\}$
+
+\begin{center}
+$S \rightarrow A$
+
+$A \rightarrow aA|aAb|\epsilon$
+
+\end{center}
+\item
+  $\{a^{4n+5}b^{3n+2}: n\geq 0\}$
+  
+  \begin{center}
+$S \rightarrow aaaaaAbb$
+
+$A \rightarrow aaaaAB|\epsilon$
+
+$B \rightarrow bbb$
+
+\end{center}
+
+\item
+  $\{a^ib^jc^k \mid i = j \mbox{ or } j = k\}$
+  
+  \begin{center}
+$S \rightarrow S_1 C | A S_2$
+
+$S_1 \rightarrow aS_1b |\epsilon$
+
+$S_2 \rightarrow bS_2c |\epsilon$
+
+$A \rightarrow aA | \epsilon$
+
+$C \rightarrow cC | \epsilon$ 
+
+\end{center}
+
+
+\end{enumerate}
+
+
+\end{document}
