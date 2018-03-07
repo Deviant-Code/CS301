@@ -26,6 +26,7 @@
 (define (lookup sym env)
   (cond [(null? env) (error "Symbol Not Found in Environment")]
         [(not (symbol? sym)) (error "Not A Symbol")]
+        [(closure? sym) (toList sym)]
         [(eq? sym (caar env)) (cadar env)]
         [else (lookup sym (cdr env))]))
 
@@ -55,14 +56,32 @@
                                (evaluate-special-form (cons (car exp) (cdr(cdr exp))) env))]
    [(eq? (car exp) 'let) (evaluate (third exp) (append (letF (second exp) env '()) env))]
    [(eq? (car exp) 'lambda) (append(cons 'closure (cdr exp)) (list env))]
-   [(eq? (car exp) 'letrec) (helpletrec (second exp) '() )]
+   [(eq? (car exp) 'letrec) (evaluate (third exp) (append (changeEnv (helpletrec (second exp) '() (third exp) ) '() (helpletrec (second exp) '() (third exp) )) e1))]
    [else (error "First Item Of List Is Not A Valid Special Form")]))
 
-(define (helpletrec exp newEnv)
-  (if (empty? (car exp)) newEnv
-   ((cons (first(first exp)) (cons 'closure (cdr(first exp))))
-    (helpletrec (cdr exp) newEnv))))
- 
+
+(define (changeEnv exp newExp newEnv)
+  (cond [(empty? exp) newExp]
+        [else  (set-closure-env! (second(first exp)) newEnv)
+               (changeEnv (cdr exp) (cons (first exp) newExp) newEnv)]))
+
+(define (toList exp)
+  (list 'closure (closure-vars exp) (closure-expr exp) (closure-env exp)))
+              
+(define (helpletrec exp newEnv lexp)
+  (if (empty? exp) newEnv
+     (helpletrec (cdr exp)
+                 (cons (cons (first(first exp)) (list(closure (first l) lexp '()))) newEnv)
+                 lexp)))
+
+(struct closure (vars expr (env #:mutable)))
+
+(define print-closure
+  (lambda (c1)
+    (display (list 'closure (closure-vars c1) (closure-expr c1) (closure-env c1)))))
+
+
+  
 
 (define (apply-closure exp val)
   (evaluate (third exp)
@@ -71,6 +90,7 @@
 (define (apply-function cexp dexp env)
   (cond
     [(procedure? cexp) (apply cexp dexp)]
+    [(closure? cexp) (apply-closure (toList cexp) dexp)]
     [(eq? (car cexp) 'closure) (apply-closure cexp dexp)]
     [else (error "Not A Procedure")]))
                      
@@ -88,5 +108,24 @@
 (define e1  (map (lambda (x y) (list x y))
                  '(     x  y  z + - * cons car cdr nil list add = equal? else)
                  (list 10 20 30 + - * cons car cdr '() list add = equal? #t)))
+
+(define lt '(letrec ((even? (lambda (n) (if (= n 0) (= 1 1) (odd? (- n 1)))))
+                           (odd? (lambda (n) (if (= n 0) (= 1 2) (even? (- n 1)))))
+                           (plus (lambda (a b) (if (= a 0) b (+ 1 (plus (- a 1) b))))))))
+
+(define l (second lt))
+
+
+(define r '(letrec ((even? (lambda (n) (if (= n 0) (= 1 1) (odd? (- n 1)))))
+                           (odd? (lambda (n) (if (= n 0) (= 1 2) (even? (- n 1)))))
+                           (plus (lambda (a b) (if (= a 0) b (+ 1 (plus (- a 1) b))))))
+                    (even? (plus 4 5))))
+
+(define z (helpletrec l '() (third r)))
+
+(define p1 '(letrec ((f (lambda (n) (if (< n 1) 1 (* n (f (- n 1))))))) (f 5)))
+
+(define ep1 (append (changeEnv (helpletrec (second p1) '() (third p1) ) '() (helpletrec (second p1) '() (third p1) )) e1))
+
 
 
