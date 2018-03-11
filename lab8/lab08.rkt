@@ -1,8 +1,8 @@
 #lang racket
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CSCI 301, Winter 2018
 ;;
-;; Lab 7 - Building A Scheme Interpreter
+;; Lab 8 - Building A Scheme Interpreter
 ;;
 ;; Jesse Ericksen
 ;; W01173602
@@ -14,7 +14,7 @@
 ;; ** Lab6 Adds functionality for let statements
 ;; *** Lab7 Adds functionality for lambda statements
 ;; **** Lab8 Adds functionality for letrec statements
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (provide lookup)
 (provide evaluate)
@@ -23,10 +23,11 @@
 (provide apply-function)
 (provide apply-closure)
 
+
 (define (lookup sym env)
   (cond [(null? env) (error "Symbol Not Found in Environment")]
-        [(not (symbol? sym)) (error "Not A Symbol")]
         [(closure? sym) (toList sym)]
+        [(not (symbol? sym)) (error "Not A Symbol")]
         [(eq? sym (caar env)) (cadar env)]
         [else (lookup sym (cdr env))]))
 
@@ -35,9 +36,11 @@
   (cond
     [(number? exp) exp]
     [(symbol? exp) (lookup exp env)]
+    [(closure? exp) (toList exp)]
     [(list? exp)
-      (if (special-form? exp) (evaluate-special-form exp env)
-           (apply-function (car (map mapEval exp)) (cdr (map mapEval exp)) env))]))
+      (cond [(special-form? exp) (evaluate-special-form exp env)]
+            [ else (define newE (map mapEval exp))
+                   (apply-function (car newE) (cdr newE) env)])]))
 
 (define (special-form? list)
   (cond
@@ -50,38 +53,28 @@
 
 (define (evaluate-special-form exp env)
   (cond
-    [(eq? (car exp) 'if) (if (evaluate (second exp) env) (evaluate (third exp) env) (evaluate (fourth exp) env))]
+    [(eq? (car exp) 'if)   (if (evaluate (second exp) env) (evaluate (third exp) env) (evaluate (fourth exp) env))]
     [(eq? (car exp) 'cond) (if (evaluate (car(car(cdr exp))) env)
                                (evaluate (car(cdr(car(cdr exp)))) env)
                                (evaluate-special-form (cons (car exp) (cdr(cdr exp))) env))]
-   [(eq? (car exp) 'let) (evaluate (third exp) (append (letF (second exp) env '()) env))]
+   [(eq? (car exp) 'let)    (evaluate (third exp) (append (letF (second exp) env '()) env))]
    [(eq? (car exp) 'lambda) (append(cons 'closure (cdr exp)) (list env))]
-   [(eq? (car exp) 'letrec) (evaluate (third exp) (append (changeEnv (helpletrec (second exp) '() (third exp) ) '() (helpletrec (second exp) '() (third exp) )) e1))]
+   [(eq? (car exp) 'letrec) (evaluate (third exp) (append (changeEnv (helpletrec (second exp) '() ) '() (append (helpletrec (second exp) '() )env)) env))]
    [else (error "First Item Of List Is Not A Valid Special Form")]))
 
+(define (helpletrec exp newEnv)
+  (if (empty? exp) newEnv
+      (helpletrec (cdr exp)
+               (cons (cons (first(first exp)) (list(closure (second(second(first exp))) (third(second(first exp))) '()))) newEnv))))
 
-(define (changeEnv exp newExp newEnv)
+(define (changeEnv exp newExp NewEnv)
   (cond [(empty? exp) newExp]
-        [else  (set-closure-env! (second(first exp)) newEnv)
-               (changeEnv (cdr exp) (cons (first exp) newExp) newEnv)]))
+        [else
+         (set-closure-env! (second(first NewEnv)) (append newExp NewEnv))
+         (changeEnv (cdr exp) (cons (first NewEnv) newExp) (cdr NewEnv))]))
 
 (define (toList exp)
   (list 'closure (closure-vars exp) (closure-expr exp) (closure-env exp)))
-              
-(define (helpletrec exp newEnv lexp)
-  (if (empty? exp) newEnv
-     (helpletrec (cdr exp)
-                 (cons (cons (first(first exp)) (list(closure (first l) lexp '()))) newEnv)
-                 lexp)))
-
-(struct closure (vars expr (env #:mutable)))
-
-(define print-closure
-  (lambda (c1)
-    (display (list 'closure (closure-vars c1) (closure-expr c1) (closure-env c1)))))
-
-
-  
 
 (define (apply-closure exp val)
   (evaluate (third exp)
@@ -93,10 +86,18 @@
     [(closure? cexp) (apply-closure (toList cexp) dexp)]
     [(eq? (car cexp) 'closure) (apply-closure cexp dexp)]
     [else (error "Not A Procedure")]))
-                     
+
 (define (letF exp env newEnv)
      (if (null? exp) newEnv
             (letF (cdr exp) env (cons(cons (first(first exp)) (list (evaluate (second(first exp)) env))) newEnv))))
+
+(define print-closure
+  (lambda (c1)
+    (display (list 'closure (closure-vars c1) (closure-expr c1) (closure-env c1)))))
+
+(struct closure (vars expr (env #:mutable)))
+
+;;Test Environments Below ======>
 
 (define add
   (lambda (a b)
@@ -104,28 +105,15 @@
           ((and (list? a) (list? b)) (append a b))
           (else (error "unable to add" a b)))))
 
-;;test environment
-(define e1  (map (lambda (x y) (list x y))
-                 '(     x  y  z + - * cons car cdr nil list add = equal? else)
-                 (list 10 20 30 + - * cons car cdr '() list add = equal? #t)))
-
-(define lt '(letrec ((even? (lambda (n) (if (= n 0) (= 1 1) (odd? (- n 1)))))
-                           (odd? (lambda (n) (if (= n 0) (= 1 2) (even? (- n 1)))))
-                           (plus (lambda (a b) (if (= a 0) b (+ 1 (plus (- a 1) b))))))))
-
-(define l (second lt))
+(define e1 (map (lambda (x y) (list x y))
+                 '(x y z + - * cons car cdr nil = equal? < else  add list)
+             (list 2 4 6 + - * cons car cdr '() = equal? < #t    add list)))
 
 
-(define r '(letrec ((even? (lambda (n) (if (= n 0) (= 1 1) (odd? (- n 1)))))
-                           (odd? (lambda (n) (if (= n 0) (= 1 2) (even? (- n 1)))))
-                           (plus (lambda (a b) (if (= a 0) b (+ 1 (plus (- a 1) b))))))
-                    (even? (plus 4 5))))
 
-(define z (helpletrec l '() (third r)))
 
-(define p1 '(letrec ((f (lambda (n) (if (< n 1) 1 (* n (f (- n 1))))))) (f 5)))
 
-(define ep1 (append (changeEnv (helpletrec (second p1) '() (third p1) ) '() (helpletrec (second p1) '() (third p1) )) e1))
+
 
 
 
